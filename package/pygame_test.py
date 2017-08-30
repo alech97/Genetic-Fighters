@@ -8,23 +8,41 @@ import package.special_math as spmath
 from pygame import display, time
 pygame.init()
 
+class Bullet():
+    def __init__(self, x, y, angle, vel, length):
+        self.p1 = (x, y)
+        self.p2 = (x + length * math.cos(angle), y + length * math.sin(angle))
+        self.angle = angle
+        self.vel = (vel * math.cos(angle), vel * math.sin(angle))
+        
+    def get_p1(self):
+        return (int(self.p1[0]), int(self.p1[1]))
+    
+    def get_p2(self):
+        return (int(self.p2[0]), int(self.p2[1]))
+    
+    def move(self):
+        self.p1 = self.p1[0] + self.vel[0], self.p1[1] + self.vel[1]
+        self.p2 = self.p2[0] + self.vel[0], self.p2[1] + self.vel[1]
+        return self.p1, self.p2
+        
+
 class Player():
     def __init__(self, x, y, angle, color):
         self.x = x
         self.y = y
         self.angle = angle
         self.color = color
-        self.vel = 10 #In pixels per second
+        self.weapon_reload = 0
         
     def get_point(self):
         return (int(self.x), int(self.y))
     
-    def update(self, ms_elapsed):
-        vel = self.vel * ms_elapsed / 1000
-        self.x, self.y = (
-            self.x + vel * math.cos(self.angle), 
-            self.y + vel * math.sin(self.angle))
-        return self.get_point()
+    def make_turn(self, action, mag):
+        #IF FIRE IS CHOSEN, RETURNS BULLET, ELSE POINTS
+        self.weapon_reload -= 1
+        if action:
+            return getattr(self, action)(mag)
     
     def get_sightline_array(self, angle_diff):
         point_list = []
@@ -34,6 +52,25 @@ class Player():
         point_list.append(spmath.point_from_angle_distance(
             (self.x, self.y), self.angle + angle_diff, 20))
         return point_list
+    
+    def move(self, dis):
+        self.x, self.y = (
+            self.x + dis * math.cos(self.angle), 
+            self.y + dis * math.sin(self.angle))
+        
+    def turn(self, angle):
+        self.angle += angle
+        
+    def fire(self, reload_ticks):
+        if self.weapon_reload <= 0:
+            self.weapon_reload = reload_ticks
+            return Bullet(self.x, self.y, self.angle, .9, 5)
+        
+def check_bullet_overlap(bullet_list):
+    range_list = sorted([(bullet.get_p1(), bullet.get_p2(), bullet) for bullet in bullet_list], key=lambda tup: tup[0][0])
+    
+    
+        
 
 #Options
 vals = {
@@ -43,7 +80,11 @@ vals = {
     'player_radius':4,
     'num_players':12,
     'player_start_radius': 190,
-    'sightline_angle': 30 * (math.pi / 180)
+    'sightline_angle': 30 * (math.pi / 180),
+    'reload_turns': .5,
+    'fps':120,
+    'bullet_length': 4,
+    'bullet_width': 2
     }
 
 #Screen
@@ -91,10 +132,27 @@ while 1:
     
     #Draw Players
     for player in players:
-        pygame.draw.circle(screen, player.color, player.update(ms_elapsed), vals['player_radius'], 0)
-        pygame.draw.lines(screen, player.color, False, player.get_sightline_array(vals['sightline_angle']), 1)
+        #TODO: implement very efficient distance estimator to determine if out of bounds
+        return_value = player.make_turn('fire', vals['fps'] * vals['reload_turns'])
+        if type(return_value).__name__ == 'Bullet':
+            pygame.draw.circle(screen, player.color, (player.x, player.y), vals['player_radius'], 0)
+            pygame.draw.lines(screen, player.color, False, player.get_sightline_array(vals['sightline_angle']), 1)
+            bullets.append(return_value)
+        elif type(return_value) is tuple:
+            pygame.draw.circle(screen, player.color, return_value, vals['player_radius'], 0)
+            pygame.draw.lines(screen, player.color, False, player.get_sightline_array(vals['sightline_angle']), 1)
+        else:
+            pygame.draw.circle(screen, player.color, (player.x, player.y), vals['player_radius'], 0)
+            pygame.draw.lines(screen, player.color, False, player.get_sightline_array(vals['sightline_angle']), 1)
+            
+    #Draw Bullets
+    for bullet in bullets:
+        bullet.move()
+        if not spmath.quick_in_range(center, bullet.get_p2(), vals['boundary']):
+            bullets.remove(bullet)
+        else:
+            pygame.draw.line(screen, 0, bullet.get_p1(), bullet.get_p2(), vals['bullet_width'])
     
     #Update display
-    ms_elapsed = clock.tick(120)
-    print(ms_elapsed)
+    ms_elapsed = clock.tick(vals['fps'])
     display.flip()

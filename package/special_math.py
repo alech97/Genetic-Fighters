@@ -12,6 +12,13 @@ def point_from_angle_distance(pos, angle_radians, distance):
         round(math.cos(angle_radians) * distance + pos[0]), 
         round(math.sin(angle_radians) * distance + pos[1]))
     
+def quick_in_range(center, point, dis):
+    if point[0] >= center[0] - dis and point[0] <= center[0] + dis and \
+        point[1] >= center[1] - dis and point[1] <= center[1] + dis:
+        return dist_between_point(center, point) <= dis
+    return False
+    
+    
 def cross_product(self, point1, point2):
     return point1.getX() * point2.getY() - point1.getY() * point2.getX()
 
@@ -25,7 +32,7 @@ def line_from_lineseg(p1, p2):
             -1*(p1.getX() * p2.getY() - p2.getX() * p1.getY()))
 
 def dist_between_point(p1, p2):
-    return math.sqrt(math.pow((p2.getX() - p1.getX()), 2) + math.pow(p2.getY() - p1.getY(), 2))
+    return math.sqrt(math.pow((p2[0] - p1[0]), 2) + math.pow(p2[1] - p1[1], 2))
     
 #TODO: Find better version of this that doesnt binary search
 def lineseg_intersects_circle(p1, p2, center, radius):
