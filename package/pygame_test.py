@@ -8,6 +8,36 @@ import package.special_math as spmath
 from pygame import display, time
 pygame.init()
 
+class Grid():
+    def __init__(self, cell_size):
+        self.cell_size = cell_size
+        self.grid = []
+        #TODO: Implement grid
+        
+    def add_bullet(self, bullet):
+        cell_one = ((bullet.p1[0] - (bullet.p1[0] % self.cell_size)) / self.width, (bullet.p1[1] - (bullet.p1[1] % self.cell_size)) / self.height)
+        cell_two = ((bullet.p2[0] - (bullet.p2[0] % self.cell_size)) / self.width, (bullet.p2[1] - (bullet.p2[1] % self.cell_size)) / self.height)
+        if (cell_one, bullet) not in self.grid:
+            self.grid.append((cell_one, bullet))
+        if cell_one != cell_two and (cell_two, bullet) not in self.grid:
+            self.grid.append((cell_two, bullet))
+    
+    def add_player(self, player):
+        cell_one = (player.x - (player.x % self.cell_size)) / self.width, (player.y - (player.y % self.cell_size)) / self.height
+        if (cell_one, player) not in self.grid:
+            self.grid.append((cell_one, player))
+        
+    def remove_object(self, rem_object):
+        for obj in self.grid:
+            if obj[1] == rem_object:
+                self.grid.remove(obj)
+                
+    def check_collisions(self):
+        self.grid = sorted(self.grid, key=lambda tup: tup[0])
+        
+        for i in range(len(self.objects)):
+            
+
 class Bullet():
     def __init__(self, x, y, angle, vel, length):
         self.p1 = (x, y)
@@ -67,10 +97,9 @@ class Player():
             return Bullet(self.x, self.y, self.angle, .9, 5)
         
 def check_bullet_overlap(bullet_list):
+    #Create a sorted list of bullets of the form: (p1, p2, bullet) sorted by x value of p1
     range_list = sorted([(bullet.get_p1(), bullet.get_p2(), bullet) for bullet in bullet_list], key=lambda tup: tup[0][0])
     
-    
-        
 
 #Options
 vals = {
@@ -84,7 +113,8 @@ vals = {
     'reload_turns': .5,
     'fps':120,
     'bullet_length': 4,
-    'bullet_width': 2
+    'bullet_width': 2,
+    'cell_size':20
     }
 
 #Screen
@@ -147,6 +177,7 @@ while 1:
             
     #Draw Bullets
     for bullet in bullets:
+        check_bullet_overlap(bullets)
         bullet.move()
         if not spmath.quick_in_range(center, bullet.get_p2(), vals['boundary']):
             bullets.remove(bullet)
