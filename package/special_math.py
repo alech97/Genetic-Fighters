@@ -4,7 +4,6 @@ This module contains math functions used by other modules.
 @author: Alec Helyar
 '''
 import math
-from package.graphics import Point
 
 #Math Functions
 def point_from_angle_distance(pos, angle_radians, distance):
@@ -27,9 +26,9 @@ def angle_from_pos_to_point(pos, point):
         point.getY() - pos.getY(), point.getX() - pos.getX())
     
 def line_from_lineseg(p1, p2):
-    return (p1.getY() - p2.getY(), 
-            p2.getX() - p1.getX(), 
-            -1*(p1.getX() * p2.getY() - p2.getX() * p1.getY()))
+    return (p1[1] - p2[1], 
+            p2[0] - p1[0], 
+            -1*(p1[0] * p2[1] - p2[0] * p1[1]))
 
 def dist_between_point(p1, p2):
     return math.sqrt(math.pow((p2[0] - p1[0]), 2) + math.pow(p2[1] - p1[1], 2))
@@ -50,7 +49,7 @@ def lineseg_intersects_circle(p1, p2, center, radius):
         middle = (upper + lower) / 2
         check = distance_between_point_and_t(middle)
         if abs(radius - check) <= 0.1:
-            return Point(
+            return (
                 p1.getX() + middle * (p2.getX() - p1.getX()), 
                 p1.getY() + middle * (p2.getY() - p1.getY()))
         elif radius > check:
@@ -69,10 +68,10 @@ def linesegs_intersect(ap1, ap2, bp1, bp2):
     if D != 0:
         x = Dx / D
         y = Dy / D
-        if x >= min(ap1.getX(), ap2.getX()) and \
-        x <= max(ap1.getX(), ap2.getX()) and \
-        y >= min(ap1.getY(), ap2.getY()) and \
-        y <= max(ap1.getY(), ap2.getY()):
+        if x >= min(ap1[0], ap2[0]) and \
+        x <= max(ap1[0], ap2[0]) and \
+        y >= min(ap1[1], ap2[1]) and \
+        y <= max(ap1[1], ap2[1]):
             return x,y
     else:
         return None
