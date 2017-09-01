@@ -30,6 +30,12 @@ class Bullet():
         self.p2 = self.p2[0] + self.vel[0], self.p2[1] + self.vel[1]
         return self.p1, self.p2
     
+    def turn(self, angle_am):
+        self.angle += angle_am
+        self.p2 = (
+            self.p1[0] + bvals['bullet_length'] * math.cos(self.angle), 
+            self.p1[1] + bvals['bullet_length'] * math.sin(self.angle))
+    
     def check_collision(self, other):
         if type(other).__name__ == 'Player':
             #TODO: Collision with player
@@ -38,6 +44,7 @@ class Bullet():
             if spmath.linesegs_intersect(
                 self.p1, self.p2, other.p1, other.p2):
                 return True
+        return False
             
     def get_bounding_points(self):
         u1 = (min(self.p1[0], self.p2[0]) - bvals['bullet_width'], min(self.p1[1], self.p2[1]) - bvals['bullet_width'])
@@ -45,3 +52,4 @@ class Bullet():
         u3 = (min(self.p1[0], self.p2[0]) - bvals['bullet_width'], max(self.p1[1], self.p2[1]) + bvals['bullet_width'])
         u4 = (max(self.p1[0], self.p2[0]) + bvals['bullet_width'], max(self.p1[1], self.p2[1]) + bvals['bullet_width'])
         return [u1, u2, u3, u4]
+    

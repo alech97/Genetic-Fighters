@@ -24,11 +24,6 @@ def cross_product(self, point1, point2):
 def angle_from_pos_to_point(pos, point):
     return math.atan2(
         point.getY() - pos.getY(), point.getX() - pos.getX())
-    
-def line_from_lineseg(p1, p2):
-    return (p1[1] - p2[1], 
-            p2[0] - p1[0], 
-            -1*(p1[0] * p2[1] - p2[0] * p1[1]))
 
 def dist_between_point(p1, p2):
     return math.sqrt(math.pow((p2[0] - p1[0]), 2) + math.pow(p2[1] - p1[1], 2))
@@ -60,21 +55,28 @@ def lineseg_intersects_circle(p1, p2, center, radius):
     return binary_search(0, 1)
     
 def linesegs_intersect(ap1, ap2, bp1, bp2):
-    L1 = line_from_lineseg(ap1, ap2)
-    L2 = line_from_lineseg(bp1, bp2)
-    D  = L1[0] * L2[1] - L1[1] * L2[0]
-    Dx = L1[2] * L2[1] - L1[1] * L2[2]
-    Dy = L1[0] * L2[2] - L1[2] * L2[0]
-    if D != 0:
-        x = Dx / D
-        y = Dy / D
-        if x >= min(ap1[0], ap2[0]) and \
-        x <= max(ap1[0], ap2[0]) and \
-        y >= min(ap1[1], ap2[1]) and \
-        y <= max(ap1[1], ap2[1]):
-            return x,y
+    print(ap1, ap2, bp1, bp2)
+    bottom = ((ap2[0] - ap1[0]) - (bp2[0] - bp1[0]), (ap2[1] - ap1[1]) - (bp2[1] - bp1[1]))
+    #If not parallel (bottom == (0, 0))
+    if bottom != (0,0):
+        t = ((bp1[0] - ap1[0]) / bottom[0], (bp1[1] - ap1[1]) / bottom[1])
+        if 0 <= t and t <= 1:
+            return True
+    #Else if not colinear
+    elif triangle_area(ap1, ap2, bp1) or triangle_area(ap2, bp1, bp2):
+        return False
+    #Else check if line seg's overlap
     else:
-        return None
+        top1 = (bp1[0] - ap1[0], bp1[1] - ap1[1])
+        top2 = (bp2[0] - ap1[0], bp2[1] - ap1[1])
+        va = (ap2[0] - ap1[0], ap2[1] - ap1[1])
+        t1 = (top1[0] / va[0] if va[0] != 0 else top1[0], top1[1] / va[1] if va[1] != 0 else top1[1])
+        t2 = (top2[0] / va[0] if va[0] != 0 else top2[0], top2[1] / va[1] if va[1] != 0 else top2[1])
+        return (0 <= t1[0] and t1[0] <= 1) or (0 <= t2[0] and t2[0] <= 1)
+    return False
+    
+def triangle_area(p1, p2, p3):
+    return abs((p1[0] * (p2[1] - p3[1]) + p2[0] * (p3[1] - p1[1]) + p3[0] * (p1[1] - p2[1])) / 2)
     
 def enemy_in_sight(angle1, angle2, angle_diff):
     angle1, angle2 = angle1 % (2 * math.pi), angle2 % (2 * math.pi)
