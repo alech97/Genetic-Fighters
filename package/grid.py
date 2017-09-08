@@ -18,15 +18,18 @@ class Grid():
         #TODO: Implement grid
         
     def add_object(self, obj):
-        bounds = obj.get_bounding_points()
-        bounds = set([((b[0] - (b[0] % self.cell_size)) / self.cell_size, (b[1] - (b[1] % self.cell_size)) / self.cell_size) for b in bounds])
-        for b in bounds:
-            self.grid.append((b, obj))
+        #Returns (min x, max x, min y, max y)
+        bounds = list(obj.get_bounding_points())
+        for b in range(len(bounds)):
+            bounds[b] = int(
+                (bounds[b] - (bounds[b] % self.cell_size)) / self.cell_size)
+        
+        for i in range(bounds[0], bounds[1] + 1):
+            for j in range(bounds[2], bounds[3] + 1):
+                self.grid.append(((i, j), obj))
         
     def remove_object(self, rem_object):
-        for obj in self.grid:
-            if obj[1] == rem_object:
-                self.grid.remove(obj)
+        self.grid = [obj for obj in self.grid if obj[1] != rem_object]
                 
     def check_collisions(self):
         #Objects in collisions

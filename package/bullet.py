@@ -13,11 +13,12 @@ bvals = {
 class Bullet():
     """Handles a bullet fired by a gun."""
     
-    def __init__(self, x, y, angle, vel):
+    def __init__(self, x, y, angle, vel, player):
         self.p1 = (x, y)
-        self.p2 = (x + bvals['bullet_length'] * math.cos(angle), y + bvals['bullet_length'] * math.sin(angle))
-        self.angle = angle
+        self.angle = 0
+        self.turn(angle)
         self.vel = (vel * math.cos(angle), vel * math.sin(angle))
+        self.player = player
         
     def get_p1(self):
         return (int(self.p1[0]), int(self.p1[1]))
@@ -37,9 +38,8 @@ class Bullet():
             self.p1[1] + bvals['bullet_length'] * math.sin(self.angle))
     
     def check_collision(self, other):
-        if type(other).__name__ == 'Player':
-            #TODO: Collision with player
-            pass
+        if type(other).__name__ == 'Player' and other != self.player:
+            return spmath.lineseg_intersects_circle(self.p1, self.p2, (other.x, other.y), other.radius)
         elif type(other).__name__ == 'Bullet':
             if spmath.linesegs_intersect(
                 self.p1, self.p2, other.p1, other.p2):
@@ -47,9 +47,9 @@ class Bullet():
         return False
             
     def get_bounding_points(self):
-        u1 = (min(self.p1[0], self.p2[0]) - bvals['bullet_width'], min(self.p1[1], self.p2[1]) - bvals['bullet_width'])
-        u2 = (max(self.p1[0], self.p2[0]) + bvals['bullet_width'], min(self.p1[1], self.p2[1]) - bvals['bullet_width'])
-        u3 = (min(self.p1[0], self.p2[0]) - bvals['bullet_width'], max(self.p1[1], self.p2[1]) + bvals['bullet_width'])
-        u4 = (max(self.p1[0], self.p2[0]) + bvals['bullet_width'], max(self.p1[1], self.p2[1]) + bvals['bullet_width'])
-        return [u1, u2, u3, u4]
+        return (
+            min(self.p1[0], self.p2[0]) - bvals['bullet_width'], 
+            max(self.p1[0], self.p2[0]) + bvals['bullet_width'], 
+            min(self.p1[1], self.p2[1]) - bvals['bullet_width'], 
+            max(self.p1[1], self.p2[1]) + bvals['bullet_width'])
     
