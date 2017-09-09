@@ -8,6 +8,7 @@ import package.special_math as spmath
 bvals = {
     'bullet_length': 6,
     'bullet_width': 2,
+    'damage': 30
     }
 
 class Bullet():
@@ -38,7 +39,9 @@ class Bullet():
             self.p1[1] + bvals['bullet_length'] * math.sin(self.angle))
     
     def check_collision(self, other):
-        if type(other).__name__ == 'Player' and other != self.player:
+        if self == other:
+            return False
+        elif type(other).__name__ == 'Player' and other != self.player:
             return spmath.lineseg_intersects_circle(self.p1, self.p2, (other.x, other.y), other.radius)
         elif type(other).__name__ == 'Bullet':
             if spmath.linesegs_intersect(
@@ -53,3 +56,6 @@ class Bullet():
             min(self.p1[1], self.p2[1]) - bvals['bullet_width'], 
             max(self.p1[1], self.p2[1]) + bvals['bullet_width'])
     
+    def damage(self, other):
+        if type(other).__name__ == 'Player':
+            other.health -= bvals['damage']

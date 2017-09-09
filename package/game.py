@@ -70,15 +70,12 @@ while 1:
     #Check Collisions
     collisions = grid.check_collisions()
     if collisions:
-        for obj in collisions:
-            if type(obj[0]).__name__ == 'Bullet':
-                if obj[0] in bullets:
-                    bullets.remove(obj[0])
-                grid.remove_object(obj[0])
-            if type(obj[1]).__name__ == 'Bullet':
-                if obj[1] in bullets:
-                    bullets.remove(obj[1])
-                grid.remove_object(obj[1])
+        for objcombo in collisions:
+            for obj in objcombo:
+                if type(obj).__name__ == 'Bullet' and obj in bullets:
+                    bullets.remove(obj)
+                    grid.remove_object(obj)
+    grid.grid = []
     
     #Draw Arena
     pygame.draw.circle(
@@ -88,11 +85,16 @@ while 1:
     
     #Draw Players
     for player in players:
-        return_value = player.make_turn('fire', vals['fps'] * vals['reload_turns'])
+        return_value = player.make_turn('fire')
         if type(return_value).__name__ == 'Bullet':
             pygame.draw.circle(screen, player.color, player.get_point(), vals['player_radius'], 0)
             pygame.draw.lines(screen, player.color, False, player.get_sightline_array(vals['sightline_angle']), 1)
             bullets.append(return_value)
+            grid.add_object(return_value)
+        if type(return_value).__name__ == 'Laser_shot':
+            pygame.draw.circle(screen, player.color, player.get_point(), vals['player_radius'], 0)
+            pygame.draw.lines(screen, player.color, False, player.get_sightline_array(vals['sightline_angle']), 1)
+            lasers.append(return_value)
             grid.add_object(return_value)
         elif type(return_value) is tuple:
             pygame.draw.circle(screen, player.color, return_value, vals['player_radius'], 0)
@@ -100,14 +102,28 @@ while 1:
         else:
             pygame.draw.circle(screen, player.color, player.get_point(), vals['player_radius'], 0)
             pygame.draw.lines(screen, player.color, False, player.get_sightline_array(vals['sightline_angle']), 1)
+            
+        if player.weapon:
+            pygame.draw.line(screen, player.weapon.color(), player.weapon.p1, player.weapon.p2, player.weapon.width())
+        grid.add_object(player)
     
     #Draw Bullets
     for bullet in bullets:
         bullet.move()
         if not spmath.quick_in_range(center, bullet.get_p2(), vals['boundary']):
             bullets.remove(bullet)
+            grid.remove_object(bullet)
         else:
             pygame.draw.line(screen, 0, bullet.get_p1(), bullet.get_p2(), bvals['bullet_width'])
+            grid.add_object(bullet)
+            
+    #Draw Lasers
+    for laser in lasers:
+        if laser.decay():
+            pygame.draw.line(screen, laser.color(), laser.get_p1(), laser.get_p2(), laser.width())
+        else:
+            lasers.remove(laser)
+            grid.remove_object(laser)
     
     #Update display
     ms_elapsed = clock.tick(vals['fps'])

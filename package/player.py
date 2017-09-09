@@ -5,7 +5,6 @@ Handles a player object.
 '''
 import package.special_math as spmath
 import math
-from package.bullet import Bullet
 
 class Player():
     def __init__(self, x, y, angle, color, radius):
@@ -17,11 +16,14 @@ class Player():
         self.weapon_reload = 0
         self.health = 100
         self.radius = radius
+        self.fitness = -1
         
     def get_point(self):
         return (int(self.x), int(self.y))
     
-    def make_turn(self, action, mag):
+    def make_turn(self, action, mag=0):
+        if self.health <= 0:
+            return -1
         #IF FIRE IS CHOSEN, RETURNS BULLET, ELSE POINTS
         self.weapon_reload -= 1
         if action:
@@ -50,18 +52,28 @@ class Player():
         if self.weapon:
             self.weapon.turn(angle)
         
-    def fire(self, reload_ticks):
-        if self.weapon_reload <= 0:
-            self.weapon_reload = reload_ticks
-            return Bullet(self.x, self.y, self.angle, .9, self)
+    def fire(self, extra):
+        if self.weapon and self.weapon_reload <= 0:
+            self.weapon_reload = self.weapon.reload_ticks()
+            return self.weapon.get_projectile(self)
+        
+    def damage(self, other):
+        if type(other).__name__ == 'Bullet' or type(other).__name__ == 'Laser_shot':
+            return other.damage(self)
         
     def check_collision(self, other):
-        if type(other).__name__ == 'Bullet' and other.player != self:
+        if self == other:
+            return False
+        elif type(other).__name__ == 'Laser_shot' and other.player != self:
+            return spmath.width_lineseg_intersects_circle(
+                other.width(), other.p1, other.p2, (self.x, self.y), self.radius)
+        elif type(other).__name__ == 'Bullet' and other.player != self:
             return spmath.lineseg_intersects_circle(
                 other.p1, other.p2, (self.x, self.y), self.radius)
         elif type(other).__name__ == 'Player':
             return spmath.dist_between_point(
                 (self.x, self.y), (other.x , other.y)) <= 2 * self.radius
+        return False
     
     def get_bounding_points(self):
         return (

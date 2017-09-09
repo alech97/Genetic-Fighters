@@ -3,13 +3,13 @@ Created on Aug 23, 2017
 This script handles the neural_network object
 @author: Alec
 '''
+from math import exp
 
 class Neural_Network(object):
     '''
     Neural Network class which represents a neural logic network 
     of varying size
     '''
-
 
     def __init__(self, num_input_nodes, weight_values, num_hidden_scalar, 
                  num_hidden_layers, num_output_nodes):
@@ -50,7 +50,7 @@ class Neural_Network(object):
                 value = 0
                 for x in range(self.num_hidden_nodes_per_layer):
                     value += self.hidden_nodes[x] * self.weight_values[i * self.num_hidden_nodes_per_layer + x + index_shift]
-                new_layer[i] = value
+                new_layer[i] = self.sigmoid(value)
             
             #Make layer new "last" layer
             self.hidden_nodes = new_layer
@@ -69,3 +69,6 @@ class Neural_Network(object):
                 value += self.hidden_nodes[x] * self.weight_values[i * self.num_hidden_nodes_per_layer + x + index_shift]
             output[i] = value
         return output
+    
+    def sigmoid(self, x):
+        return 1 / (1 + exp(-x))

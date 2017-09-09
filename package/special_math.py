@@ -42,6 +42,11 @@ def lineseg_intersects_circle(p1, p2, center, radius):
     ac = (center[0] - p1[0], center[1] - p1[1])
     p = vector_projection((p2[0] - p1[0], p2[1] - p1[1]), ac)
     return vector_mag((ac[0] - p[0], ac[1] - p[1])) <= radius
+
+def width_lineseg_intersects_circle(lwidth, p1, p2, center, radius):
+    ac = (center[0] - p1[0], center[1] - p1[1])
+    p = vector_projection((p2[0] - p1[0], p2[1] - p1[1]), ac)
+    return vector_mag((ac[0] - p[0], ac[1] - p[1])) <= (radius + lwidth)
     
 def linesegs_intersect(ap1, ap2, bp1, bp2):
     bottom = ((ap2[0] - ap1[0]) - (bp2[0] - bp1[0]), (ap2[1] - ap1[1]) - (bp2[1] - bp1[1]))

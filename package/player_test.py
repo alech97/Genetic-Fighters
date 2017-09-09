@@ -8,6 +8,7 @@ from package.player import Player
 from package.bullet import Bullet
 from math import pi
 from package.special_math import dist_between_point
+import package.weapon as weapon
 
 class Test(unittest.TestCase):
 
@@ -58,7 +59,6 @@ class Test(unittest.TestCase):
         self.assertTrue(self.p.check_collision(bi))
         self.assertFalse(self.p.check_collision(pn))
         self.assertFalse(self.p.check_collision(bn))
-        
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
