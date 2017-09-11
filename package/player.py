@@ -24,6 +24,7 @@ class Player():
     def make_turn(self, action, mag=0):
         if self.health <= 0:
             return -1
+        self.fitness += 1
         #IF FIRE IS CHOSEN, RETURNS BULLET, ELSE POINTS
         self.weapon_reload -= 1
         if action:

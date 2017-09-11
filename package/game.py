@@ -9,6 +9,11 @@ from pygame import display, time
 from package.grid import Grid
 from package.bullet import bvals
 from package.player import Player
+from package.weapon import Weapon
+
+"""
+TODO: Change this page into a Game class which can be called by genetic watcher
+"""
 
 #Initialize python values
 pygame.init()
@@ -17,14 +22,17 @@ pygame.init()
 vals = {
     'boundary':300,
     'margin':10,
-    'info_panel_width':200,
+    'info_panel_width':0,
     'player_radius':4,
     'num_players':12,
     'player_start_radius': 190,
     'sightline_angle': 30 * (math.pi / 180),
     'reload_turns': .5,
     'fps':120,
-    'cell_size':20
+    'cell_size':20,
+    'num_guns':5,
+    'num_lasers':5,
+    'weapon_dist':60
     }
 
 #Screen
@@ -42,6 +50,7 @@ clock = time.Clock()
 players = []
 bullets = []
 lasers = []
+unclaimed_weapons = []
 ms_elapsed = 0
 grid = Grid(20)
 
@@ -56,6 +65,25 @@ for i in range(vals['num_players']):
         vals['player_radius'])
     players.append(player)
     grid.add_object(player)
+    
+#Create weapons
+angle = 2 * math.pi / (vals['num_guns'] + vals['num_lasers'])
+angle_shift = random.uniform(0, math.pi / 4)
+for i in range(0, vals['num_lasers'] + vals['num_guns'], 2):
+    #Create a gun
+    ang = i * angle + angle_shift
+    p = spmath.point_from_angle_distance(center, ang, vals['weapon_dist'])
+    gun = Weapon(p[0], p[1], ang, 'gun')
+    unclaimed_weapons.append(gun)
+    grid.add_object(gun)
+    
+for j in range(1, vals['num_lasers'] + vals['num_guns'], 2):
+    #Create a laser
+    ang = j * angle + angle_shift
+    p = spmath.point_from_angle_distance(center, ang, vals['weapon_dist'])
+    laser = Weapon(p[0], p[1], ang, 'laser')
+    unclaimed_weapons.append(laser)
+    grid.add_object(laser)
 
 #Start simulation
 while 1:
@@ -106,6 +134,10 @@ while 1:
         if player.weapon:
             pygame.draw.line(screen, player.weapon.color(), player.weapon.p1, player.weapon.p2, player.weapon.width())
         grid.add_object(player)
+        
+    #Draw unclaimed Weapons
+    for weapon in unclaimed_weapons:
+        pygame.draw.line(screen, weapon.color(), weapon.p1, weapon.p2, weapon.width())
     
     #Draw Bullets
     for bullet in bullets:

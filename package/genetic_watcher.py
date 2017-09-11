@@ -22,6 +22,7 @@ class Mastermind():
     #TODO: Initialize Population
     
     def create_player(self, genes=None):
+        #TODO: Create player with custom color, index, and genes
         pass
     
     #TODO: Method to sort population by fitness

@@ -58,4 +58,14 @@ class Weapon():
         elif self.wtype == 'laser':
             point = spmath.point_from_angle_distance(self.p1, self.angle, weapon_vals[self.wtype]['length'])
             return Laser_shot(point[0], point[1], self.angle, player)
+        
+    def check_collision(self, other):
+        #TODO: Check Collision
+        pass
     
+    def get_bounding_points(self):
+        return (
+            min(self.p1[0], self.p2[0]) - weapon_vals[self.wtype]['width'], 
+            max(self.p1[0], self.p2[0]) + weapon_vals[self.wtype]['width'], 
+            min(self.p1[1], self.p2[1]) - weapon_vals[self.wtype]['width'], 
+            max(self.p1[1], self.p2[1]) + weapon_vals[self.wtype]['width'])
